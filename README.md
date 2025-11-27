@@ -1,3 +1,8 @@
+# 📌 E-Commerce Fraud Detection – Cloud Architecture
+
+Below is the high-level system architecture:
+
+```mermaid
 graph TD
     %% 1. Ingestion & Streaming
     subgraph "1. Ingestion & Streaming"
