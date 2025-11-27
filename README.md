@@ -1,8 +1,3 @@
-# 📌 E-Commerce Fraud Detection – Cloud Architecture
-
-Below is the high-level system architecture:
-
-```mermaid
 graph TD
     %% 1. Ingestion & Streaming
     subgraph "1. Ingestion & Streaming"
@@ -58,9 +53,9 @@ graph TD
         KV[Azure Key Vault]
         GitHub[GitHub Actions CI/CD]
 
-        KV -.->|Secrets (Conn strings, Keys)| Producer
+        KV -.->|Secrets| Producer
         KV -.->|Secrets| Streamlit
         KV -.->|Secrets| Endpoint
-        GitHub -.->|Build & Deploy| Streamlit
+        GitHub -.->|Build & Deploy App| Streamlit
         GitHub -.->|ML Pipeline| Train
     end
