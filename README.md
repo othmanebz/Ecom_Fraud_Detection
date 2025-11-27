@@ -1,40 +1,66 @@
-# Ecom_Fraud_Detection
+# 📌 E-Commerce Fraud Detection – Cloud Architecture
 
+Below is the high-level system architecture:
+
+```mermaid
 graph TD
-    %% Source
+    %% 1. Ingestion & Streaming
     subgraph "1. Ingestion & Streaming"
-    CSV[(Fraud Dataset CSV)] -->|Python Script| Producer[Python Event Producer]
-    Producer -->|JSON Stream| EventHub[Azure Event Hubs]
+        CSV[(Fraud Dataset CSV)]
+        Producer[Python Event Producer]
+        EventHub[Azure Event Hubs]
+
+        CSV -->|Batch Load / Replay| Producer
+        Producer -->|JSON Stream| EventHub
     end
 
-    %% Storage & Processing
+    %% 2. Storage & Processing
     subgraph "2. Storage & Processing"
-    EventHub -->|Path A: Hot| ASA[Azure Stream Analytics]
-    EventHub -->|Path B: Cold| Blob[Azure Data Lake / Blob Storage]
-    
-    ASA -->|Suspicious Txns| SQL[(Azure SQL Database)]
-    Blob -->|History Data| AML[Azure Machine Learning]
+        ASA[Azure Stream Analytics]
+        Blob[Azure Data Lake / Blob Storage]
+        SQL[(Azure SQL Database)]
+        AML[Azure Machine Learning]
+
+        EventHub -->|Path A: Hot| ASA
+        EventHub -->|Path B: Cold| Blob
+
+        ASA -->|Suspicious Txns| SQL
+        Blob -->|Historical Data| AML
     end
 
-    %% Machine Learning
+    %% 3. AI & Machine Learning
     subgraph "3. AI & Machine Learning"
-    AML -->|Read Data| Train[Training Notebook]
-    Train -->|SMOTE| Balancing[Data Balancing]
-    Balancing -->|Train Model| Model[Random Forest / XGBoost]
-    Model -->|Track Metrics| MLflow[MLflow Registry]
-    MLflow -->|Deploy| Endpoint[Real-Time Inference API]
+        Train[Training Notebook / Pipeline]
+        Balancing[SMOTE / Class Weights]
+        Model[Random Forest / XGBoost]
+        MLflow[MLflow / AML Registry]
+        Endpoint[Real-Time Inference API]
+
+        AML -->|Read Features| Train
+        Train -->|Imbalanced Data| Balancing
+        Balancing -->|Train Model| Model
+        Model -->|Track Metrics| MLflow
+        MLflow -->|Deploy Best Model| Endpoint
     end
 
-    %% Usage
+    %% 4. Consumption & Visualization
     subgraph "4. Consumption & Visualization"
-    Endpoint -->|API Response| Streamlit[Streamlit Analyst App]
-    SQL -->|Direct Query| PowerBI[Power BI Dashboard]
-    Streamlit -->|Manual Check| SQL
+        Streamlit[Streamlit Fraud Analyst App]
+        PowerBI[Power BI Fraud Dashboard]
+
+        Endpoint -->|Score Txn| Streamlit
+        SQL -->|Direct Query| PowerBI
+        Streamlit -->|Manual Label / Feedback| SQL
     end
 
-    %% Governance
+    %% Support (Security, CI/CD)
     subgraph "Support"
-    KV[Azure Key Vault] -.->|Secrets| Producer
-    KV -.->|Secrets| Streamlit
-    GitHub[GitHub Actions] -.->|CI/CD| Streamlit
+        KV[Azure Key Vault]
+        GitHub[GitHub Actions CI/CD]
+
+        KV -.->|Secrets (Conn strings, Keys)| Producer
+        KV -.->|Secrets| Streamlit
+        KV -.->|Secrets| Endpoint
+        GitHub -.->|Build & Deploy| Streamlit
+        GitHub -.->|ML Pipeline| Train
     end
